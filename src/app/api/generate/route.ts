@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  // Using gemini-2.5-flash which is guaranteed available
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   if (!GEMINI_API_KEY) {
     console.error('GEMINI_API_KEY is missing from environment variables');
@@ -20,26 +21,45 @@ export async function POST(req: Request) {
     
     if (flow === 'brainstorm') {
         prompt = `You are an expert SaaS builder and market analyst. The user gives you a niche/prompt. 
-        Generate EXACTLY 3 high-potential SaaS ideas for that niche. 
-        Return ONLY a pure JSON array of objects, each containing: "title" (string) and "desc" (1 sentence string). 
+        Generate EXACTLY 1 high-potential, unique SaaS idea for that niche. 
+        Return ONLY a pure JSON object containing: "title" (string) and "desc" (1-2 sentence string). 
         Do not include markdown formatting or backticks.
         
         User Niche: ${idea}`;
     } else {
-        prompt = `You are a SaaS market expert. Goal: Validate this idea and return a comprehensive launch JSON blueprint.
+        prompt = `You are a SaaS market expert. Goal: Perform an exhaustive deep-dive validation for this idea and return a comprehensive, data-rich JSON launch blueprint.
         Idea: ${idea}
-        Return ONLY valid JSON with this structure:
+        Return ONLY valid JSON with this exact structure:
         {
           "marketDemandScore": number (0-10),
           "successProbability": number (0-100),
           "verdict": "Go" | "No Go",
+          "granularScores": {
+            "technicalComplexity": number (0-10),
+            "timeToMarket": number (0-10),
+            "scalability": number (0-10),
+            "defensibility": number (0-10)
+          },
+          "marketGap": "A detailed explanation of the underserved market need this fills.",
+          "swot": {
+            "strengths": [string],
+            "weaknesses": [string],
+            "opportunities": [string],
+            "threats": [string]
+          },
+          "userPersona": {
+            "name": string,
+            "painPoints": [string],
+            "motivation": string
+          },
           "competitors": [ { "name": string, "weakness": string } ],
           "pricing": [ { "tier": string, "price": string, "target": string } ],
+          "revenueStreams": [string],
           "features": [ string ],
-          "techStack": { "frontend": string, "backend": string, "database": string },
-          "landingPageCopy": { "hero": string, "subheadline": string },
+          "techStack": { "frontend": string, "backend": string, "database": string, "hosting": string },
+          "landingPageCopy": { "hero": string, "subheadline": string, "cta": string },
           "launchPlan": [ string ],
-          "analysis": "A compelling 3-sentence justification of exactly WHY this idea is high-potential, focusing on the specific market gap it fills and why now is the time to build it."
+          "analysis": "A compelling, data-backed justification of exactly WHY this idea is high-potential (or high-risk), focusing on the specific market gap and timing."
         }`;
     }
 
@@ -52,7 +72,7 @@ export async function POST(req: Request) {
                 temperature: 0.7,
                 topP: 0.95,
                 topK: 64,
-                maxOutputTokens: 2048,
+                maxOutputTokens: 8192,
                 responseMimeType: "application/json",
             }
         })
@@ -61,7 +81,7 @@ export async function POST(req: Request) {
     const result = await response.json();
     
     if (result.error) {
-        console.error('Gemini API Error Response:', result.error);
+        console.error('Gemini API Error Response:', JSON.stringify(result.error, null, 2));
         throw new Error(result.error.message || 'Gemini API call failed');
     }
 
@@ -75,16 +95,7 @@ export async function POST(req: Request) {
     // More robust JSON extraction
     let cleanJSON = text.trim();
     
-    // If it looks like markdown, try to extract the content between backticks
-    if (cleanJSON.includes('```')) {
-        const match = cleanJSON.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-        if (match && match[1]) {
-            cleanJSON = match[1].trim();
-        }
-    }
-
     // Attempt to find the first '{' or '[' and the last '}' or ']'
-    // to handle cases where there might be preamble or postscript text
     const firstBrace = cleanJSON.indexOf('{');
     const firstBracket = cleanJSON.indexOf('[');
     const lastBrace = cleanJSON.lastIndexOf('}');
@@ -106,16 +117,18 @@ export async function POST(req: Request) {
     }
     
     try {
+        console.log('Final cleanJSON length:', cleanJSON.length);
         const parsed = JSON.parse(cleanJSON);
 
         if (flow === 'brainstorm') {
-            return NextResponse.json({ ideas: Array.isArray(parsed) ? parsed : (parsed.ideas || []) });
+            const ideaArray = Array.isArray(parsed) ? parsed : (parsed.ideas ? (Array.isArray(parsed.ideas) ? parsed.ideas : [parsed.ideas]) : [parsed]);
+            return NextResponse.json({ ideas: ideaArray });
         }
         
         return NextResponse.json({ blueprint: parsed });
     } catch (parseError) {
-        console.error('Failed to parse Gemini JSON. Raw text:', text);
-        console.error('Cleaned JSON attempt:', cleanJSON);
+        console.error('Failed to parse Gemini JSON. Raw text preview:', text.substring(0, 200));
+        console.error('Cleaned JSON preview:', cleanJSON.substring(0, 200));
         throw new Error('Malformed analysis data. Please try again.');
     }
 

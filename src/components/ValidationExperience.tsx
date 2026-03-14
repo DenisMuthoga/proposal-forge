@@ -40,6 +40,16 @@ export function ValidationExperience() {
   const [loadingStep, setLoadingStep] = useState(0);
   const [ideas, setIdeas] = useState<any[]>([]);
 
+  // Sync mode with URL parameters if they change
+  useEffect(() => {
+    const modeParam = searchParams.get('mode');
+    if (modeParam === 'validate') {
+      setMode('validate');
+    } else if (modeParam === 'brainstorm') {
+      setMode('brainstorm');
+    }
+  }, [searchParams]);
+
   const handleStartFlow = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!prompt.trim()) return;
@@ -61,8 +71,10 @@ export function ValidationExperience() {
         
         const data = await res.json();
         if (data.ideas && data.ideas.length > 0) {
+          // Go straight to analysis as the user requested
           setIdeas(data.ideas);
-          setStep('picking');
+          setStep('synthesizing');
+          await generateBlueprint(data.ideas[0].title);
         } else {
           throw new Error('No ideas generated. Please try a more descriptive niche.');
         }

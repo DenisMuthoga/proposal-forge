@@ -20,6 +20,8 @@ export const viewport = {
 };
 
 
+import { Providers } from '@/components/Providers';
+
 export default function RootLayout({
   children,
 }: {
@@ -28,8 +30,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body className={`${inter.variable} ${outfit.variable} font-sans antialiased text-white bg-[#030303]`}>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
 }
+

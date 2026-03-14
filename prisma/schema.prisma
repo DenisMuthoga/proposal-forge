@@ -42,4 +42,11 @@ model Idea {
   pricing         Json?
   landingPageCopy Json?
   launchPlan      Json?
+  
+  // New deep-dive fields
+  granularScores  Json?
+  marketGap       String?
+  swot            Json?
+  userPersona     Json?
+  revenueStreams  Json?
 }

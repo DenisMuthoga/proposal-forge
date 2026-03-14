@@ -68,7 +68,7 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
           className="flex flex-col sm:flex-row gap-6 w-full max-w-xl"
         >
-          <Link href="/validate" className="flex-1 glass-card p-6 rounded-3xl border border-white/5 hover:border-primary-500/50 transition-all group relative overflow-hidden text-left">
+          <Link href="/validate" className="flex-1 glass-card p-6 rounded-3xl border border-white/5 hover:border-primary-500/50 transition-all active:scale-[0.98] group relative overflow-hidden text-left">
             <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl group-hover:bg-primary-500/20 transition-all"></div>
             <div className="w-12 h-12 rounded-2xl bg-primary-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Sparkles className="w-6 h-6 text-primary-400" />
@@ -80,7 +80,7 @@ export default function Home() {
             </span>
           </Link>
 
-          <Link href="/validate?mode=validate" className="flex-1 glass-card p-6 rounded-3xl border border-white/5 hover:border-secondary-500/50 transition-all group relative overflow-hidden text-left">
+          <Link href="/validate?mode=validate" className="flex-1 glass-card p-6 rounded-3xl border border-white/5 hover:border-secondary-500/50 transition-all active:scale-[0.98] group relative overflow-hidden text-left">
             <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-secondary-500/10 rounded-full blur-2xl group-hover:bg-secondary-500/20 transition-all"></div>
             <div className="w-12 h-12 rounded-2xl bg-secondary-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <Zap className="w-6 h-6 text-secondary-400" />

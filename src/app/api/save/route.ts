@@ -30,6 +30,11 @@ export async function POST(req: Request) {
         pricing: blueprint.pricing,
         landingPageCopy: blueprint.landingPageCopy,
         launchPlan: blueprint.launchPlan,
+        granularScores: blueprint.granularScores,
+        marketGap: blueprint.marketGap,
+        swot: blueprint.swot,
+        userPersona: blueprint.userPersona,
+        revenueStreams: blueprint.revenueStreams,
       }
     });
 

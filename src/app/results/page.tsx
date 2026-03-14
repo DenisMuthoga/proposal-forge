@@ -3,6 +3,7 @@
 import { ResultsDashboard } from '@/components/ResultsDashboard';
 import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Check, Loader2, Save } from 'lucide-react';
 
 export default function ResultsPage() {
@@ -48,9 +49,9 @@ export default function ResultsPage() {
     <div className="min-h-screen bg-[#030303] text-white">
       <nav className="border-b border-border-subtle bg-black/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="font-heading font-bold text-xl">
+          <Link href="/" className="font-heading font-bold text-xl">
             Launch<span className="text-secondary-400">Engine</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-4">
             <button 
                 onClick={handleSave}
