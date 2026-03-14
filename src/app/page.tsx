@@ -61,7 +61,7 @@ export default function Home() {
         >
           Type your startup concept. Our AI immediately analyzes market demand, predicts success probability, and generates your complete step-by-step launch plan.
         </motion.p>
-
+        
         {/* Input Field Simulation */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
@@ -70,22 +70,27 @@ export default function Home() {
           className="w-full max-w-3xl relative"
         >
           <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-600 to-secondary-600 opacity-30 blur-xl animate-pulse-glow"></div>
-          <div className="relative glass-card rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-2xl">
+          <form 
+            action="/validate" 
+            className="relative glass-card rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-2xl"
+          >
             <input 
+              name="idea"
               type="text" 
+              required
               placeholder="e.g. AI-powered recipe generator for professional chefs..." 
               className="w-full bg-transparent border-none text-white px-6 py-4 text-lg focus:outline-none focus:ring-0 placeholder:text-accent-500"
             />
-            <Link href="/validate" className="w-full md:w-auto shrink-0 bg-primary-600 hover:bg-primary-500 text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group">
+            <button type="submit" className="w-full md:w-auto shrink-0 bg-primary-600 hover:bg-primary-500 text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group">
               Validate Idea
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
+            </button>
+          </form>
           
           <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-accent-400">
             <span>Try:</span>
-            <button className="hover:text-white transition-colors underline decoration-border-subtle underline-offset-4">Tinder for dog playdates</button>
-            <button className="hover:text-white transition-colors underline decoration-border-subtle underline-offset-4">B2B SaaS for podcasters</button>
+            <Link href="/validate?idea=Tinder%20for%20dog%20playdates" className="hover:text-white transition-colors underline decoration-border-subtle underline-offset-4">Tinder for dog playdates</Link>
+            <Link href="/validate?idea=B2B%20SaaS%20for%20podcasters" className="hover:text-white transition-colors underline decoration-border-subtle underline-offset-4">B2B SaaS for podcasters</Link>
           </div>
         </motion.div>
       </main>

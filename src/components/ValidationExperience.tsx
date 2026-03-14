@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Loader2, Bot, CheckCircle, Lightbulb } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const deepDiveStatements = [
   "Analyzing market demand...",
@@ -30,8 +30,11 @@ const mockGeneratedIdeas = [
 
 export function ValidationExperience() {
   const router = useRouter();
-  const [prompt, setPrompt] = useState("");
-  const [step, setStep] = useState<'input' | 'generating-ideas' | 'picking' | 'synthesizing'>('input');
+  const searchParams = useSearchParams();
+  const prefilledIdea = searchParams.get('idea');
+  
+  const [prompt, setPrompt] = useState(prefilledIdea || "");
+  const [step, setStep] = useState<'input' | 'generating-ideas' | 'picking' | 'synthesizing'>(prefilledIdea ? 'synthesizing' : 'input');
   const [loadingStep, setLoadingStep] = useState(0);
 
   const handleGenerateIdeas = (e: React.FormEvent) => {
