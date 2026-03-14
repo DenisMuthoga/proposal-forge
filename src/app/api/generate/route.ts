@@ -21,23 +21,21 @@ export async function POST(req: Request) {
         
         User Niche: ${idea}`;
     } else {
-        prompt = `You are an expert SaaS Go-to-Market strategist. The user gives you an idea for a business or software product.
-        You must output ONLY valid JSON describing a complete validation blueprint. NO markdown headers, NO backticks.
-        The JSON must perfectly match this structure:
+        prompt = `You are an expert SaaS Go-to-Market strategist. Analyze this idea: ${idea}
+        Output ONLY valid JSON. No text before or after.
+        Structure:
         {
           "marketDemandScore": number (0-100),
           "successProbability": number (0-100),
           "verdict": "Go" | "No Go",
           "competitors": [ { "name": string, "weakness": string } ],
           "pricing": [ { "tier": string, "price": string, "target": string } ],
-          "features": [ string ],
+          "features": [ string (top 3) ],
           "techStack": { "frontend": string, "backend": string, "database": string },
           "landingPageCopy": { "hero": string, "subheadline": string },
-          "launchPlan": [ string (step by step) ],
-          "analysis": "A detailed 4-sentence reason for this verdict."
-        }
-        
-        Generate a validation blueprint for this idea: ${idea}`;
+          "launchPlan": [ string (top 4 steps) ],
+          "analysis": "Concise 3-sentence verdict reasoning."
+        }`;
     }
 
     const response = await fetch(GEMINI_URL, {

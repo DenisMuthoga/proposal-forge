@@ -90,7 +90,7 @@ export function ValidationExperience() {
       // Simulate progress bar while the network request is actually flying in the background
       interval = setInterval(() => {
         setLoadingStep((prev) => Math.min(prev + 1, deepDiveStatements.length - 1));
-      }, 1500);
+      }, 600);
 
       // If we landed here directly from URL, trigger the backend call immediately
       if (prefilledIdea) {
