@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles, Loader2, Bot, CheckCircle, Lightbulb } from 'lucide-react';
+import { ArrowRight, Sparkles, Loader2, Bot, CheckCircle, Lightbulb, AlertTriangle } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const deepDiveStatements = [
@@ -61,39 +61,48 @@ export function ValidationExperience() {
     setStep('picking');
   };
 
+  const [error, setError] = useState<string | null>(null);
+
   const handlePickIdea = async (ideaTitle: string) => {
     setStep('synthesizing');
-    generateBlueprint(ideaTitle);
+    await generateBlueprint(ideaTitle);
   };
 
   const generateBlueprint = async (targetIdea: string) => {
+    setError(null);
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idea: targetIdea, flow: 'blueprint' })
       });
+      
+      if (!res.ok) throw new Error('Failed to generate blueprint');
+      
       const data = await res.json();
       if (data.blueprint) {
          localStorage.setItem('launch_engine_blueprint', JSON.stringify(data.blueprint));
+         router.push('/results?id=generated');
+      } else {
+         throw new Error('Analysis engine returned no data');
       }
-    } catch(e) {
+    } catch(e: any) {
       console.error(e);
+      setError(e.message || 'Something went wrong while validating your idea.');
+      // Fallback to picking if it fails
+      setStep('picking');
     }
-    // We navigate to results regardless so the UI resolves
-    router.push('/results?id=generated');
   };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (step === 'synthesizing') {
-      // Simulate progress bar while the network request is actually flying in the background
       interval = setInterval(() => {
         setLoadingStep((prev) => Math.min(prev + 1, deepDiveStatements.length - 1));
       }, 600);
 
-      // If we landed here directly from URL, trigger the backend call immediately
-      if (prefilledIdea) {
+      // Only auto-trigger if we haven't already (e.g. from landing page)
+      if (prefilledIdea && ideas.length === 0) {
         generateBlueprint(prefilledIdea);
       }
     }
@@ -116,6 +125,12 @@ export function ValidationExperience() {
               <h1 className="text-4xl md:text-5xl font-heading font-bold">What niche or problem are you exploring?</h1>
               <p className="text-accent-300 text-lg">Tell our AI your focus, and we'll generate high-potential SaaS ideas for you to build.</p>
             </div>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0" /> {error}
+              </div>
+            )}
 
             <form onSubmit={handleGenerateIdeas} className="w-full relative group">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-600/50 to-secondary-600/50 opacity-20 group-focus-within:opacity-50 blur-xl transition-opacity duration-500"></div>

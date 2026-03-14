@@ -54,19 +54,34 @@ export async function POST(req: Request) {
     });
 
     const result = await response.json();
-    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (result.error) {
+        console.error('Gemini API Error Response:', result.error);
+        throw new Error(result.error.message || 'Gemini API call failed');
+    }
+
+    let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!text) {
+        console.error('Unexpected Gemini Response Structure:', JSON.stringify(result, null, 2));
         throw new Error('No content received from Gemini');
     }
 
-    const parsed = JSON.parse(text);
-
-    if (flow === 'brainstorm') {
-        return NextResponse.json({ ideas: parsed });
-    }
+    // Clean up potential markdown formatting from Gemini
+    const cleanJSON = text.replace(/```json/g, '').replace(/```/g, '').trim();
     
-    return NextResponse.json({ blueprint: parsed });
+    try {
+        const parsed = JSON.parse(cleanJSON);
+
+        if (flow === 'brainstorm') {
+            return NextResponse.json({ ideas: parsed });
+        }
+        
+        return NextResponse.json({ blueprint: parsed });
+    } catch (parseError) {
+        console.error('Failed to parse Gemini JSON:', cleanJSON);
+        throw new Error('Malformed analysis data. Please try again.');
+    }
 
   } catch (error) {
     console.error('Generation Failed:', error);
