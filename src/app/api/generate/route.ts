@@ -21,20 +21,20 @@ export async function POST(req: Request) {
         
         User Niche: ${idea}`;
     } else {
-        prompt = `You are an expert SaaS Go-to-Market strategist. Analyze this idea: ${idea}
-        Output ONLY valid JSON. No text before or after.
-        Structure:
+        prompt = `You are a SaaS analyst. Goal: Validate this idea and return a JSON blueprint.
+        Idea: ${idea}
+        Return ONLY valid JSON with this structure:
         {
-          "marketDemandScore": number (0-100),
-          "successProbability": number (0-100),
+          "marketDemandScore": number,
+          "successProbability": number,
           "verdict": "Go" | "No Go",
           "competitors": [ { "name": string, "weakness": string } ],
           "pricing": [ { "tier": string, "price": string, "target": string } ],
-          "features": [ string (top 3) ],
+          "features": [ string ],
           "techStack": { "frontend": string, "backend": string, "database": string },
           "landingPageCopy": { "hero": string, "subheadline": string },
-          "launchPlan": [ string (top 4 steps) ],
-          "analysis": "Concise 3-sentence verdict reasoning."
+          "launchPlan": [ string ],
+          "analysis": "3-sentence justification."
         }`;
     }
 
