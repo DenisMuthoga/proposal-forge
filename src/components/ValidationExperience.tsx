@@ -32,9 +32,10 @@ export function ValidationExperience() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const prefilledIdea = searchParams.get('idea');
+  const initialMode = searchParams.get('mode') === 'validate' ? 'validate' : (prefilledIdea ? 'validate' : 'brainstorm');
   
   const [prompt, setPrompt] = useState(prefilledIdea || "");
-  const [mode, setMode] = useState<'brainstorm' | 'validate'>(prefilledIdea ? 'validate' : 'brainstorm');
+  const [mode, setMode] = useState<'brainstorm' | 'validate'>(initialMode);
   const [step, setStep] = useState<'input' | 'generating-ideas' | 'picking' | 'synthesizing'>(prefilledIdea ? 'synthesizing' : 'input');
   const [loadingStep, setLoadingStep] = useState(0);
   const [ideas, setIdeas] = useState<any[]>([]);

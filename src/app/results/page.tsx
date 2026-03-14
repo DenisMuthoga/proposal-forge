@@ -1,7 +1,7 @@
 'use client';
 
 import { ResultsDashboard } from '@/components/ResultsDashboard';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, Loader2, Save } from 'lucide-react';
 
@@ -68,7 +68,9 @@ export default function ResultsPage() {
       </nav>
       
       <main className="max-w-7xl mx-auto px-6 py-12">
-        <ResultsDashboard />
+        <Suspense fallback={<div className="text-accent-400">Loading analysis...</div>}>
+          <ResultsDashboard />
+        </Suspense>
       </main>
     </div>
   );
