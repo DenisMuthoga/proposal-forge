@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles, Loader2, Bot, CheckCircle, Lightbulb, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Sparkles, Loader2, Bot, CheckCircle, Lightbulb, AlertTriangle, Zap } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 const deepDiveStatements = [
@@ -34,31 +34,43 @@ export function ValidationExperience() {
   const prefilledIdea = searchParams.get('idea');
   
   const [prompt, setPrompt] = useState(prefilledIdea || "");
+  const [mode, setMode] = useState<'brainstorm' | 'validate'>(prefilledIdea ? 'validate' : 'brainstorm');
   const [step, setStep] = useState<'input' | 'generating-ideas' | 'picking' | 'synthesizing'>(prefilledIdea ? 'synthesizing' : 'input');
   const [loadingStep, setLoadingStep] = useState(0);
   const [ideas, setIdeas] = useState<any[]>([]);
 
-  const handleGenerateIdeas = async (e?: React.FormEvent) => {
+  const handleStartFlow = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!prompt.trim()) return;
-    setStep('generating-ideas');
     
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idea: prompt, flow: 'brainstorm' })
-      });
-      const data = await res.json();
-      if (data.ideas) {
-        setIdeas(data.ideas);
-      } else {
-        setIdeas(mockGeneratedIdeas); // fallback
+    setError(null);
+    if (mode === 'validate') {
+      setStep('synthesizing');
+      await generateBlueprint(prompt);
+    } else {
+      setStep('generating-ideas');
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idea: prompt, flow: 'brainstorm' })
+        });
+        
+        if (!res.ok) throw new Error('Failed to brainstorm ideas');
+        
+        const data = await res.json();
+        if (data.ideas && data.ideas.length > 0) {
+          setIdeas(data.ideas);
+          setStep('picking');
+        } else {
+          throw new Error('No ideas generated. Please try a more descriptive niche.');
+        }
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || 'Could not brainstorm ideas at this time.');
+        setStep('input');
       }
-    } catch (e) {
-      setIdeas(mockGeneratedIdeas);
     }
-    setStep('picking');
   };
 
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +78,12 @@ export function ValidationExperience() {
   const handlePickIdea = async (ideaTitle: string) => {
     setStep('synthesizing');
     await generateBlueprint(ideaTitle);
+  };
+
+  const handlePickRandom = () => {
+    if (ideas.length === 0) return;
+    const randomIdx = Math.floor(Math.random() * ideas.length);
+    handlePickIdea(ideas[randomIdx].title);
   };
 
   const generateBlueprint = async (targetIdea: string) => {
@@ -81,7 +99,7 @@ export function ValidationExperience() {
       
       const data = await res.json();
       if (data.blueprint) {
-         localStorage.setItem('launch_engine_blueprint', JSON.stringify(data.blueprint));
+         localStorage.setItem('launch_engine_blueprint', JSON.stringify({ ...data.blueprint, title: targetIdea }));
          router.push('/results?id=generated');
       } else {
          throw new Error('Analysis engine returned no data');
@@ -89,8 +107,12 @@ export function ValidationExperience() {
     } catch(e: any) {
       console.error(e);
       setError(e.message || 'Something went wrong while validating your idea.');
-      // Fallback to picking if it fails
-      setStep('picking');
+      // Fallback to picking ONLY if we have brainstormed ideas to pick from
+      if (ideas.length > 0) {
+        setStep('picking');
+      } else {
+        setStep('input');
+      }
     }
   };
 
@@ -121,9 +143,29 @@ export function ValidationExperience() {
             exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
             className="w-full flex flex-col items-center text-center space-y-12"
           >
-            <div className="space-y-4">
-              <h1 className="text-4xl md:text-5xl font-heading font-bold">What niche or problem are you exploring?</h1>
-              <p className="text-accent-300 text-lg">Tell our AI your focus, and we'll generate high-potential SaaS ideas for you to build.</p>
+            <div className="space-y-6">
+              <div className="flex bg-white/5 p-1 rounded-2xl border border-white/10 w-fit mx-auto">
+                <button 
+                  onClick={() => setMode('brainstorm')}
+                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${mode === 'brainstorm' ? 'bg-white text-black shadow-lg' : 'text-accent-400 hover:text-white'}`}
+                >
+                  I need an idea
+                </button>
+                <button 
+                  onClick={() => setMode('validate')}
+                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${mode === 'validate' ? 'bg-white text-black shadow-lg' : 'text-accent-400 hover:text-white'}`}
+                >
+                  I have an idea
+                </button>
+              </div>
+              <h1 className="text-4xl md:text-5xl font-heading font-bold">
+                {mode === 'brainstorm' ? 'What niche are you exploring?' : 'Describe your SaaS idea'}
+              </h1>
+              <p className="text-accent-300 text-lg">
+                {mode === 'brainstorm' 
+                  ? "Tell us your focus, and we'll generate high-potential SaaS ideas for you." 
+                  : "We'll run a deep-dive validation to see if your idea has legs."}
+              </p>
             </div>
 
             {error && (
@@ -132,13 +174,13 @@ export function ValidationExperience() {
               </div>
             )}
 
-            <form onSubmit={handleGenerateIdeas} className="w-full relative group">
+            <form onSubmit={handleStartFlow} className="w-full relative group">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-600/50 to-secondary-600/50 opacity-20 group-focus-within:opacity-50 blur-xl transition-opacity duration-500"></div>
               <div className="relative glass-card rounded-2xl p-2 flex flex-col md:flex-row gap-2">
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="e.g. I want to build a tool for freelance designers..."
+                  placeholder={mode === 'brainstorm' ? "e.g. Tools for freelance designers..." : "e.g. A marketplace where developers can sell pre-built SaaS modules..."}
                   className="w-full bg-transparent border-none text-white p-6 text-xl focus:outline-none focus:ring-0 placeholder:text-accent-600 resize-none min-h-[120px]"
                   autoFocus
                 />
@@ -147,8 +189,17 @@ export function ValidationExperience() {
                   disabled={!prompt.trim()}
                   className="w-full md:w-auto self-end bg-white text-black hover:bg-accent-200 disabled:opacity-50 disabled:cursor-not-allowed px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
                 >
-                  <Sparkles className="w-5 h-5 text-primary-600" />
-                  Brainstorm Ideas
+                  {mode === 'brainstorm' ? (
+                    <>
+                      <Sparkles className="w-5 h-5 text-primary-600" />
+                      Brainstorm Ideas
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5 text-secondary-500" />
+                      Validate Now
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -156,10 +207,13 @@ export function ValidationExperience() {
             <div className="space-y-4">
               <p className="text-sm font-medium tracking-widest uppercase text-accent-500">Or try these</p>
               <div className="flex flex-wrap justify-center gap-3">
-                {["Tools for real estate agents", "Software for indie podcast creators", "B2B SaaS for HR departments"].map((example) => (
+                {(mode === 'brainstorm' 
+                  ? ["Real estate tech", "Podcast creator tools", "HR automation"] 
+                  : ["Tinder for pets", "AI Lawyer for startups", "Shopify for restaurants"]
+                ).map((example) => (
                   <button 
                     key={example}
-                    onClick={() => { setPrompt(example); setStep('generating-ideas'); setTimeout(() => setStep('picking'), 2000); }}
+                    onClick={() => { setPrompt(example); setMode(mode); }}
                     className="px-4 py-2 rounded-full border border-border-subtle bg-white/5 hover:bg-white/10 text-sm text-accent-300 transition-colors"
                   >
                     {example}
@@ -223,9 +277,28 @@ export function ValidationExperience() {
               ))}
             </div>
             
-            <button onClick={() => setStep('input')} className="text-sm text-accent-500 hover:text-white transition-colors underline decoration-border-subtle underline-offset-4">
-              None of these? Let's try another prompt.
-            </button>
+            <div className="flex flex-col md:flex-row gap-4 items-center">
+              <button 
+                onClick={() => setStep('input')} 
+                className="text-sm text-accent-500 hover:text-white transition-colors underline decoration-border-subtle underline-offset-4"
+              >
+                Try a different niche
+              </button>
+              <div className="hidden md:block w-px h-4 bg-white/10 mx-2"></div>
+              <button 
+                onClick={() => { setMode('validate'); setStep('synthesizing'); generateBlueprint(prompt); }}
+                className="text-sm text-primary-400 font-bold hover:text-primary-300 transition-colors"
+              >
+                Just validate "{prompt}" instead
+              </button>
+              <div className="hidden md:block w-px h-4 bg-white/10 mx-2"></div>
+              <button 
+                onClick={handlePickRandom}
+                className="flex items-center gap-2 px-6 py-2 rounded-xl bg-primary-600/10 text-primary-400 border border-primary-500/20 hover:bg-primary-600/20 transition-all font-bold text-sm"
+              >
+                <Sparkles className="w-4 h-4" /> Pick For Me (Random)
+              </button>
+            </div>
           </motion.div>
         )}
 

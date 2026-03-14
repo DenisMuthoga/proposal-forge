@@ -31,7 +31,7 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <main className="flex-1 w-full max-w-7xl px-4 pt-32 pb-24 md:pt-48 md:pb-32 flex flex-col items-center text-center relative z-10">
+      <main className="flex-1 w-full max-w-7xl px-4 pt-32 pb-24 md:pt-40 md:pb-32 flex flex-col items-center text-center relative z-10">
         <div className="absolute inset-0 -z-10 h-[600px] w-full bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-900/40 via-background to-background opacity-70"></div>
         
         <motion.div
@@ -59,39 +59,38 @@ export default function Home() {
           transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
           className="text-lg md:text-2xl text-accent-300 max-w-3xl mb-12"
         >
-          Type your startup concept. Our AI immediately analyzes market demand, predicts success probability, and generates your complete step-by-step launch plan.
+          Our AI analyzes market demand, predicts success probability, and generates your complete step-by-step launch plan in seconds.
         </motion.p>
         
-        {/* Input Field Simulation */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-          className="w-full max-w-3xl relative"
+          className="flex flex-col sm:flex-row gap-6 w-full max-w-xl"
         >
-          <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-600 to-secondary-600 opacity-30 blur-xl animate-pulse-glow"></div>
-          <form 
-            action="/validate" 
-            className="relative glass-card rounded-2xl p-2 flex flex-col md:flex-row items-center gap-2 shadow-2xl"
-          >
-            <input 
-              name="idea"
-              type="text" 
-              required
-              placeholder="e.g. AI-powered recipe generator for professional chefs..." 
-              className="w-full bg-transparent border-none text-white px-6 py-4 text-lg focus:outline-none focus:ring-0 placeholder:text-accent-500"
-            />
-            <button type="submit" className="w-full md:w-auto shrink-0 bg-primary-600 hover:bg-primary-500 text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all group">
-              Validate Idea
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-          </form>
-          
-          <div className="mt-6 flex flex-wrap justify-center gap-3 text-sm text-accent-400">
-            <span>Try:</span>
-            <Link href="/validate?idea=Tinder%20for%20dog%20playdates" className="hover:text-white transition-colors underline decoration-border-subtle underline-offset-4">Tinder for dog playdates</Link>
-            <Link href="/validate?idea=B2B%20SaaS%20for%20podcasters" className="hover:text-white transition-colors underline decoration-border-subtle underline-offset-4">B2B SaaS for podcasters</Link>
-          </div>
+          <Link href="/validate" className="flex-1 glass-card p-6 rounded-3xl border border-white/5 hover:border-primary-500/50 transition-all group relative overflow-hidden text-left">
+            <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-primary-500/10 rounded-full blur-2xl group-hover:bg-primary-500/20 transition-all"></div>
+            <div className="w-12 h-12 rounded-2xl bg-primary-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Sparkles className="w-6 h-6 text-primary-400" />
+            </div>
+            <h3 className="text-xl font-bold font-heading mb-2">I need an idea</h3>
+            <p className="text-accent-400 text-sm mb-4">AI will brainstorm high-potential SaaS concepts for you.</p>
+            <span className="text-primary-400 font-bold text-sm flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+              Start Brainstorming <ArrowRight className="w-4 h-4" />
+            </span>
+          </Link>
+
+          <Link href="/validate?mode=validate" className="flex-1 glass-card p-6 rounded-3xl border border-white/5 hover:border-secondary-500/50 transition-all group relative overflow-hidden text-left">
+            <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-secondary-500/10 rounded-full blur-2xl group-hover:bg-secondary-500/20 transition-all"></div>
+            <div className="w-12 h-12 rounded-2xl bg-secondary-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Zap className="w-6 h-6 text-secondary-400" />
+            </div>
+            <h3 className="text-xl font-bold font-heading mb-2">I have an idea</h3>
+            <p className="text-accent-400 text-sm mb-4">Run a deep-dive validation on your own concept.</p>
+            <span className="text-secondary-400 font-bold text-sm flex items-center gap-2 group-hover:translate-x-1 transition-transform">
+              Validate Idea <ArrowRight className="w-4 h-4" />
+            </span>
+          </Link>
         </motion.div>
       </main>
 

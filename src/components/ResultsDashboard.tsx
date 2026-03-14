@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Download, Share2, Target, TrendingUp, AlertTriangle, CheckCircle2, Zap, Rocket, Globe, DollarSign, Layers } from 'lucide-react';
+import { Download, Share2, Target, TrendingUp, AlertTriangle, CheckCircle2, Zap, Rocket, Globe, DollarSign, Layers, Lightbulb } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,23 +19,71 @@ const itemVariants = {
 export function ResultsDashboard() {
   const [meterValue, setMeterValue] = useState(0);
   const [blueprint, setBlueprint] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const ideaId = searchParams.get('id');
 
   useEffect(() => {
-    const stored = localStorage.getItem('launch_engine_blueprint');
-    if (stored) {
-      const data = JSON.parse(stored);
-      setBlueprint(data);
-      // Animate the meter to the success probability
-      setTimeout(() => {
-        setMeterValue(data.successProbability || 0);
-      }, 500);
-    } else {
-      // Fallback/Mock just in case
-      setTimeout(() => {
-        setMeterValue(87);
-      }, 500);
+    async function loadBlueprint() {
+      if (ideaId && ideaId !== 'generated') {
+          // Fetch from DB
+          try {
+              const res = await fetch(`/api/ideas/${ideaId}`);
+              if (!res.ok) throw new Error('Blueprint not found');
+              const data = await res.json();
+              setBlueprint(data);
+              setTimeout(() => setMeterValue(data.probability || data.successProbability || 0), 500);
+          } catch (err) {
+              console.error(err);
+              setError('Could not load the requested blueprint.');
+          }
+      } else {
+          // Load from LocalStorage
+          const stored = localStorage.getItem('launch_engine_blueprint');
+          if (stored) {
+            try {
+              const data = JSON.parse(stored);
+              if (!data || typeof data !== 'object') {
+                throw new Error('Invalid analysis format');
+              }
+              setBlueprint(data);
+              // Animate the meter to the success probability
+              setTimeout(() => {
+                setMeterValue(data.successProbability || 0);
+              }, 500);
+            } catch (e) {
+              console.error('Error parsing blueprint:', e);
+              setError('The analysis data was corrupted or incomplete.');
+            }
+          } else {
+            setError('No analysis was found. Please go back and generate a new one.');
+          }
+      }
     }
-  }, []);
+    loadBlueprint();
+  }, [ideaId]);
+
+  const router = useRouter();
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 text-center">
+        <div className="p-4 rounded-full bg-red-500/10 border border-red-500/20">
+          <AlertTriangle className="w-12 h-12 text-red-400" />
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold font-heading">Something went wrong</h2>
+          <p className="text-accent-400 max-w-sm">{error}</p>
+        </div>
+        <button 
+          onClick={() => router.push('/')}
+          className="px-8 py-3 rounded-xl bg-white text-black font-bold hover:bg-accent-200 transition-all"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   if (!blueprint) {
       return (
@@ -64,8 +113,13 @@ export function ResultsDashboard() {
             </span>
             <span className="text-accent-400 text-sm">Generated just now</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-heading font-bold mb-2">Startup Blueprint</h1>
-          <p className="text-accent-300 max-w-2xl">{blueprint.analysis}</p>
+          <h1 className="text-3xl md:text-5xl font-heading font-bold mb-4">Startup Blueprint</h1>
+          <div className="space-y-2">
+            <span className="text-primary-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+              <Lightbulb className="w-3 h-3" /> Why this works
+            </span>
+            <p className="text-accent-300 max-w-2xl text-lg leading-relaxed">{blueprint.analysis || blueprint.description}</p>
+          </div>
         </div>
         
         <div className="flex flex-col gap-3 min-w-[200px]">
@@ -124,7 +178,7 @@ export function ResultsDashboard() {
             <Target className="w-4 h-4 text-secondary-400" /> Market Demand
           </h3>
           <div className="flex-1 flex flex-col justify-center">
-            <div className="text-6xl font-heading font-black mb-2 text-white">{blueprint.marketDemandScore / 10}<span className="text-3xl text-accent-500">/10</span></div>
+            <div className="text-6xl font-heading font-black mb-2 text-white">{(blueprint.marketDemandScore || blueprint.demandScore) / 10}<span className="text-3xl text-accent-500">/10</span></div>
             <p className="text-accent-300">AI-predicted market appetite based on current sector trends.</p>
           </div>
           <div className="mt-6 pt-6 border-t border-white/5 flex justify-between items-center text-sm">

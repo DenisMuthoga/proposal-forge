@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
 export async function POST(req: Request) {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+  if (!GEMINI_API_KEY) {
+    console.error('GEMINI_API_KEY is missing from environment variables');
+    return NextResponse.json({ error: 'AI configuration error' }, { status: 500 });
+  }
+
   try {
     const { idea, flow } = await req.json();
 
@@ -21,12 +26,12 @@ export async function POST(req: Request) {
         
         User Niche: ${idea}`;
     } else {
-        prompt = `You are a SaaS analyst. Goal: Validate this idea and return a JSON blueprint.
+        prompt = `You are a SaaS market expert. Goal: Validate this idea and return a comprehensive launch JSON blueprint.
         Idea: ${idea}
         Return ONLY valid JSON with this structure:
         {
-          "marketDemandScore": number,
-          "successProbability": number,
+          "marketDemandScore": number (0-10),
+          "successProbability": number (0-100),
           "verdict": "Go" | "No Go",
           "competitors": [ { "name": string, "weakness": string } ],
           "pricing": [ { "tier": string, "price": string, "target": string } ],
@@ -34,7 +39,7 @@ export async function POST(req: Request) {
           "techStack": { "frontend": string, "backend": string, "database": string },
           "landingPageCopy": { "hero": string, "subheadline": string },
           "launchPlan": [ string ],
-          "analysis": "3-sentence justification."
+          "analysis": "A compelling 3-sentence justification of exactly WHY this idea is high-potential, focusing on the specific market gap it fills and why now is the time to build it."
         }`;
     }
 
@@ -67,19 +72,50 @@ export async function POST(req: Request) {
         throw new Error('No content received from Gemini');
     }
 
-    // Clean up potential markdown formatting from Gemini
-    const cleanJSON = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    // More robust JSON extraction
+    let cleanJSON = text.trim();
+    
+    // If it looks like markdown, try to extract the content between backticks
+    if (cleanJSON.includes('```')) {
+        const match = cleanJSON.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (match && match[1]) {
+            cleanJSON = match[1].trim();
+        }
+    }
+
+    // Attempt to find the first '{' or '[' and the last '}' or ']'
+    // to handle cases where there might be preamble or postscript text
+    const firstBrace = cleanJSON.indexOf('{');
+    const firstBracket = cleanJSON.indexOf('[');
+    const lastBrace = cleanJSON.lastIndexOf('}');
+    const lastBracket = cleanJSON.lastIndexOf(']');
+
+    let startIndex = -1;
+    let endIndex = -1;
+
+    if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+        startIndex = firstBrace;
+        endIndex = lastBrace;
+    } else if (firstBracket !== -1) {
+        startIndex = firstBracket;
+        endIndex = lastBracket;
+    }
+
+    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+        cleanJSON = cleanJSON.substring(startIndex, endIndex + 1);
+    }
     
     try {
         const parsed = JSON.parse(cleanJSON);
 
         if (flow === 'brainstorm') {
-            return NextResponse.json({ ideas: parsed });
+            return NextResponse.json({ ideas: Array.isArray(parsed) ? parsed : (parsed.ideas || []) });
         }
         
         return NextResponse.json({ blueprint: parsed });
     } catch (parseError) {
-        console.error('Failed to parse Gemini JSON:', cleanJSON);
+        console.error('Failed to parse Gemini JSON. Raw text:', text);
+        console.error('Cleaned JSON attempt:', cleanJSON);
         throw new Error('Malformed analysis data. Please try again.');
     }
 

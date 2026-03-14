@@ -1,159 +1,135 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Search, Flame, TrendingUp, Filter, ThumbsUp, MessageSquare, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Flame, TrendingUp, Filter, Sparkles, ArrowRight, Lightbulb, Zap } from 'lucide-react';
 import Link from 'next/link';
-
-const IDEAS_MOCK = [
-  {
-    id: 1,
-    title: "AI-Powered SDR for Boring B2B Niches",
-    creator: "alex_builds",
-    score: 9,
-    probability: 88,
-    votes: 342,
-    verdict: "Strong Signal",
-    tags: ["SalesTech", "AI", "B2B"],
-    time: "2h ago"
-  },
-  {
-    id: 2,
-    title: "Micro-SaaS for podcast show notes generation",
-    creator: "creator_jen",
-    score: 8,
-    probability: 76,
-    votes: 189,
-    verdict: "Viable",
-    tags: ["Creator Economy", "Audio"],
-    time: "4h ago"
-  },
-  {
-    id: 3,
-    title: "Uber for dog walking but strictly for corgis",
-    creator: "corgi_fanatic",
-    score: 2,
-    probability: 12,
-    votes: 45,
-    verdict: "Red Ocean",
-    tags: ["Marketplace", "Pets"],
-    time: "6h ago"
-  }
-];
+import { useRouter } from 'next/navigation';
 
 export default function DiscoverPage() {
+  const [niche, setNiche] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [ideas, setIdeas] = useState<any[]>([]);
+  const router = useRouter();
+
+  const handleDiscover = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!niche.trim()) return;
+    
+    setIsGenerating(true);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea: niche, flow: 'brainstorm' })
+      });
+      const data = await res.json();
+      if (data.ideas) {
+        setIdeas(data.ideas);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleAnalyze = (title: string) => {
+    router.push(`/validate?idea=${encodeURIComponent(title)}`);
+  };
+
   return (
-    <div className="min-h-screen bg-[#030303] text-white">
+    <div className="min-h-screen bg-[#030303] text-white selection:bg-primary-500 selection:text-white">
       {/* Navbar */}
-      <nav className="border-b border-border-subtle bg-black/50 backdrop-blur-md sticky top-0 z-50">
+      <nav className="border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/" className="font-heading font-bold text-xl">
-            Launch<span className="text-secondary-400">Engine</span>
+          <Link href="/" className="font-heading font-bold text-xl flex items-center gap-2">
+            <Zap className="w-5 h-5 text-primary-400" />
+            Launch<span className="text-gradient">Engine</span>
           </Link>
-          <div className="flex items-center gap-4">
-            <Link href="/validate" className="px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-500 text-sm font-bold transition-colors">
-              Submit Idea
+          <div className="flex items-center gap-6">
+            <Link href="/dashboard" className="text-sm font-medium text-accent-300 hover:text-white transition-colors">Dashboard</Link>
+            <Link href="/validate?mode=validate" className="px-4 py-2 rounded-xl bg-white text-black text-sm font-bold transition-all hover:bg-accent-200">
+              Validate My Idea
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">Discover <span className="text-gradient">Blueprints</span></h1>
-            <p className="text-accent-300 text-lg">Explore top-validated SaaS ideas, track market trends, and find your next venture.</p>
-          </div>
+      <main className="max-w-7xl mx-auto px-6 py-20">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h1 className="text-5xl md:text-6xl font-heading font-bold mb-6">Discover <span className="text-gradient">Market Gaps</span></h1>
+          <p className="text-accent-300 text-lg mb-10">Enter a niche or industry, and our AI will uncover high-potential SaaS opportunities for you to build.</p>
           
-          <div className="flex bg-white/5 border border-white/10 p-1 rounded-xl w-full md:w-auto">
-             <div className="relative flex-1 group">
-               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-accent-500" />
-               <input type="text" placeholder="Search ideas..." className="bg-transparent border-none text-white pl-10 pr-4 py-2 w-full focus:outline-none focus:ring-0 text-sm" />
-             </div>
-             <button className="px-3 py-2 text-accent-400 hover:text-white transition-colors bg-white/5 rounded-lg border border-white/5 flex items-center gap-2 text-sm ml-2">
-               <Filter className="w-4 h-4" /> Filters
-             </button>
-          </div>
+          <form onSubmit={handleDiscover} className="relative group">
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-primary-600 to-secondary-600 opacity-20 group-focus-within:opacity-40 blur-xl transition-all"></div>
+            <div className="relative glass-card rounded-2xl p-2 flex flex-col md:flex-row gap-2">
+              <input 
+                type="text" 
+                value={niche}
+                onChange={(e) => setNiche(e.target.value)}
+                placeholder="e.g. Real Estate, Health Tech, Developer Tools..." 
+                className="flex-1 bg-transparent border-none text-white px-6 py-4 text-xl focus:outline-none focus:ring-0 placeholder:text-accent-600"
+              />
+              <button 
+                type="submit" 
+                disabled={isGenerating || !niche.trim()}
+                className="bg-primary-600 hover:bg-primary-500 disabled:opacity-50 text-white px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all min-w-[180px]"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Find Gaps
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
 
-        {/* Filters/Nav */}
-        <div className="flex overflow-x-auto gap-4 mb-8 pb-2 scrollbar-hide">
-          <button className="px-4 py-2 rounded-full bg-white text-black font-bold text-sm tracking-wide whitespace-nowrap flex items-center gap-2">
-            <Flame className="w-4 h-4 text-orange-500" /> Trending Weekly
-          </button>
-          <button className="px-4 py-2 rounded-full border border-white/10 text-accent-300 hover:text-white hover:bg-white/5 font-medium text-sm whitespace-nowrap flex items-center gap-2 transition-colors">
-            <TrendingUp className="w-4 h-4" /> Highest Demand
-          </button>
-          <button className="px-4 py-2 rounded-full border border-white/10 text-accent-300 hover:text-white hover:bg-white/5 font-medium text-sm whitespace-nowrap flex items-center gap-2 transition-colors">
-            <ShieldCheck className="w-4 h-4" /> Strong Signals Only
-          </button>
-        </div>
-
-        {/* Ideas Feed */}
-        <div className="grid lg:grid-cols-2 gap-6">
-          {IDEAS_MOCK.map((idea, idx) => (
+        <AnimatePresence mode="wait">
+          {ideas.length > 0 ? (
             <motion.div 
-              key={idea.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              className="glass-card rounded-3xl p-6 group cursor-pointer hover:border-primary-500/30 flex flex-col h-full"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="grid md:grid-cols-3 gap-6"
             >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-700 to-secondary-700 flex items-center justify-center font-bold text-xs">
-                    {idea.creator[0].toUpperCase()}
+              {ideas.map((idea, idx) => (
+                <div 
+                  key={idx}
+                  className="glass-card p-8 rounded-3xl border border-white/5 hover:border-primary-500/30 transition-all group flex flex-col h-full"
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 text-primary-400 group-hover:scale-110 transition-transform">
+                    <Lightbulb className="w-6 h-6" />
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium text-accent-300">@{idea.creator}</span>
-                    <span className="text-[10px] text-accent-500">{idea.time}</span>
-                  </div>
-                </div>
-                
-                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                  idea.score >= 8 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                  idea.score >= 5 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 
-                  'bg-red-500/10 text-red-400 border-red-500/20'
-                }`}>
-                  {idea.verdict}
-                </div>
-              </div>
-
-              <h2 className="text-xl font-heading font-bold mb-3 group-hover:text-primary-300 transition-colors">{idea.title}</h2>
-              
-              <div className="flex flex-wrap gap-2 mb-6 mt-auto">
-                {idea.tags.map(tag => (
-                  <span key={tag} className="text-xs bg-white/5 text-accent-400 px-2.5 py-1 rounded-md border border-white/5">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              <div className="pt-4 border-t border-white/5 flex items-center justify-between mt-auto">
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-accent-500 uppercase tracking-wider">Demand Score</span>
-                    <span className="font-heading font-bold text-lg">{idea.score}<span className="text-accent-500 text-sm">/10</span></span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-accent-500 uppercase tracking-wider">Win Prob.</span>
-                    <span className="font-heading font-bold text-lg text-secondary-400">{idea.probability}%</span>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <button className="flex items-center gap-1.5 text-accent-400 hover:text-white transition-colors group/btn">
-                    <MessageSquare className="w-4 h-4" /> <span className="text-sm font-medium">12</span>
-                  </button>
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-white group/btn">
-                    <ThumbsUp className="w-4 h-4 group-hover/btn:-translate-y-0.5 transition-transform" /> 
-                    <span className="text-sm font-bold">{idea.votes}</span>
+                  <h3 className="text-2xl font-bold font-heading mb-4 text-white group-hover:text-primary-300 transition-colors">{idea.title}</h3>
+                  <p className="text-accent-300 leading-relaxed mb-8 flex-1">{idea.desc}</p>
+                  <button 
+                    onClick={() => handleAnalyze(idea.title)}
+                    className="w-full py-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white text-black hover:border-white transition-all font-bold flex items-center justify-center gap-2 group/btn"
+                  >
+                    Analyze Blueprint
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
                 </div>
-              </div>
+              ))}
             </motion.div>
-          ))}
-        </div>
+          ) : !isGenerating && (
+            <div className="grid md:grid-cols-3 gap-8 opacity-40">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="glass-card p-8 rounded-3xl border border-white/5 h-64 flex flex-col justify-end">
+                   <div className="w-12 h-4 bg-white/10 rounded mb-4"></div>
+                   <div className="w-full h-8 bg-white/5 rounded"></div>
+                </div>
+              ))}
+            </div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

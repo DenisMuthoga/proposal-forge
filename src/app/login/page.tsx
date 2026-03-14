@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Mail, Github, Zap } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -32,11 +33,17 @@ export default function LoginPage() {
         <p className="text-accent-400 text-sm mb-8">Sign in to access your validated blueprints.</p>
         
         <div className="space-y-4">
-          <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black font-semibold rounded-xl hover:bg-accent-200 transition-colors">
+          <button 
+            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-black font-semibold rounded-xl hover:bg-accent-200 transition-colors"
+          >
             <Mail className="w-5 h-5" /> Continue with Google
           </button>
           
-          <button className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#1e293b] border border-white/5 text-white font-semibold rounded-xl hover:bg-[#334155] transition-colors">
+          <button 
+            onClick={() => signIn('github', { callbackUrl: '/dashboard' })}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#1e293b] border border-white/5 text-white font-semibold rounded-xl hover:bg-[#334155] transition-colors"
+          >
             <Github className="w-5 h-5" /> Continue with GitHub
           </button>
         </div>
