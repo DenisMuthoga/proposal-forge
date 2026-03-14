@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  stripeId      String?   @unique
+  plan          String    @default("FREE") // FREE, PRO
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  ideas         Idea[]
+}
+
+model Idea {
+  id              String   @id @default(cuid())
+  title           String
+  description     String
+  demandScore     Int      @default(0)
+  probability     Int      @default(0)
+  verdict         String   @default("Pending")
+  isPublic        Boolean  @default(false)
+  votes           Int      @default(0)
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // JSON fields for unstructured AI generated blueprint data
+  competitors     Json?
+  features        Json?
+  techStack       Json?
+  pricing         Json?
+  landingPageCopy Json?
+  launchPlan      Json?
+}

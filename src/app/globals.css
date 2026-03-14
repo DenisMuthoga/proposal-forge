@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-heading: var(--font-outfit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  
+  --color-background: #030303;
+  --color-foreground: #ffffff;
+  --color-primary-50: #fcf9ff;
+  --color-primary-100: #f6edff;
+  --color-primary-200: #ebd8ff;
+  --color-primary-300: #ddb8ff;
+  --color-primary-400: #c789ff;
+  --color-primary-500: #ae52ff;
+  --color-primary-600: #9d2bf4;
+  --color-primary-700: #8518d6;
+  --color-primary-800: #7119b4;
+  --color-primary-900: #5c1692;
+  --color-primary-950: #3b0568;
+
+  --color-secondary-50: #f0fdfa;
+  --color-secondary-100: #ccfbf1;
+  --color-secondary-200: #99f6e4;
+  --color-secondary-300: #5eead4;
+  --color-secondary-400: #2dd4bf;
+  --color-secondary-500: #14b8a6;
+  --color-secondary-600: #0d9488;
+  --color-secondary-700: #0f766e;
+  --color-secondary-800: #115e59;
+  --color-secondary-900: #134e4a;
+  --color-secondary-950: #042f2e;
+
+  --color-accent-50: #f4f6f8;
+  --color-accent-100: #e2e8f0;
+  --color-accent-200: #cbd5e1;
+  --color-accent-300: #94a3b8;
+  --color-accent-400: #64748b;
+  --color-accent-500: #475569;
+  --color-accent-600: #334155;
+  --color-accent-700: #1e293b;
+  --color-accent-800: #0f172a;
+  --color-accent-900: #0a0f1e;
+  --color-accent-950: #050811;
+
+  --color-glass-light: rgba(255, 255, 255, 0.03);
+  --color-glass-medium: rgba(255, 255, 255, 0.08);
+  --color-glass-strong: rgba(255, 255, 255, 0.15);
+  
+  --color-border-subtle: rgba(255, 255, 255, 0.05);
+  --color-border-focus: rgba(174, 82, 255, 0.4);
+
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-fade-up: fade-up 0.5s ease-out;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-glow: pulse-glow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-spin-slow: spin 8s linear infinite;
+
+  @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes fade-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  @keyframes pulse-glow {
+    0% { box-shadow: 0 0 0 0 rgba(174, 82, 255, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(174, 82, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(174, 82, 255, 0); }
+  }
+}
+
+@layer base {
+  :root {
+    --background: #030303;
+    --foreground: #ffffff;
+    --card: #0a0f1e;
+    --card-foreground: #ffffff;
+    --popover: #0a0f1e;
+    --popover-foreground: #ffffff;
+    --primary: #ae52ff;
+    --primary-foreground: #ffffff;
+    --secondary: #14b8a6;
+    --secondary-foreground: #ffffff;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --accent: #1e293b;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: rgba(255, 255, 255, 0.08);
+    --input: rgba(255, 255, 255, 0.05);
+    --ring: rgba(174, 82, 255, 0.5);
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    background-image: radial-gradient(circle at 50% 0%, #170d2b 0%, #030303 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-glass-light backdrop-blur-xl border border-border-subtle shadow-2xl;
+  }
+  .glass-card {
+    @apply bg-glass-medium backdrop-blur-md border border-border-subtle shadow-xl hover:bg-glass-strong transition-all duration-300;
+  }
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-400 to-secondary-400;
+  }
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-yellow-600;
+  }
+  .bg-gradient-primary {
+    @apply bg-gradient-to-br from-primary-600 to-primary-900;
+  }
+  .bg-gradient-mesh {
+    background-color: #030303;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(273, 100%, 35%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, hsla(175, 100%, 30%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(273, 100%, 35%, 0.15) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(175, 100%, 30%, 0.15) 0px, transparent 50%);
+  }
+}
