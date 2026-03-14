@@ -36,40 +36,69 @@ export function ValidationExperience() {
   const [prompt, setPrompt] = useState(prefilledIdea || "");
   const [step, setStep] = useState<'input' | 'generating-ideas' | 'picking' | 'synthesizing'>(prefilledIdea ? 'synthesizing' : 'input');
   const [loadingStep, setLoadingStep] = useState(0);
+  const [ideas, setIdeas] = useState<any[]>([]);
 
-  const handleGenerateIdeas = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGenerateIdeas = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!prompt.trim()) return;
     setStep('generating-ideas');
     
-    // Simulate AI generation of ideas
-    setTimeout(() => {
-      setStep('picking');
-    }, 2000);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea: prompt, flow: 'brainstorm' })
+      });
+      const data = await res.json();
+      if (data.ideas) {
+        setIdeas(data.ideas);
+      } else {
+        setIdeas(mockGeneratedIdeas); // fallback
+      }
+    } catch (e) {
+      setIdeas(mockGeneratedIdeas);
+    }
+    setStep('picking');
   };
 
-  const handlePickIdea = (ideaTitle: string) => {
+  const handlePickIdea = async (ideaTitle: string) => {
     setStep('synthesizing');
+    generateBlueprint(ideaTitle);
+  };
+
+  const generateBlueprint = async (targetIdea: string) => {
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idea: targetIdea, flow: 'blueprint' })
+      });
+      const data = await res.json();
+      if (data.blueprint) {
+         localStorage.setItem('launch_engine_blueprint', JSON.stringify(data.blueprint));
+      }
+    } catch(e) {
+      console.error(e);
+    }
+    // We navigate to results regardless so the UI resolves
+    router.push('/results?id=generated');
   };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (step === 'synthesizing') {
+      // Simulate progress bar while the network request is actually flying in the background
       interval = setInterval(() => {
-        setLoadingStep((prev) => {
-          if (prev >= deepDiveStatements.length - 1) {
-            clearInterval(interval);
-            setTimeout(() => {
-              router.push('/results?id=test-idea');
-            }, 1000);
-            return prev;
-          }
-          return prev + 1;
-        });
+        setLoadingStep((prev) => Math.min(prev + 1, deepDiveStatements.length - 1));
       }, 1500);
+
+      // If we landed here directly from URL, trigger the backend call immediately
+      if (prefilledIdea) {
+        generateBlueprint(prefilledIdea);
+      }
     }
     return () => clearInterval(interval);
-  }, [step, router]);
+  }, [step]);
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col items-center pt-24 pb-24">
@@ -157,7 +186,7 @@ export function ValidationExperience() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-6 w-full text-left">
-              {mockGeneratedIdeas.map((idea, idx) => (
+              {ideas.map((idea, idx) => (
                  <motion.button
                    initial={{ opacity: 0, y: 20 }}
                    animate={{ opacity: 1, y: 0 }}
