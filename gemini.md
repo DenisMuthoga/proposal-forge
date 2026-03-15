@@ -7,21 +7,22 @@
 - **Core Feature**: Single-idea brainstorming that navigates directly to a cinematic deep-dive analysis.
 - **Enhanced Analysis Dashboard**: 
     - **Strategic Blueprint**: Full-width, data-rich justification board with Business Intel sidebar.
+    - **Market Sizing (TAM/SAM/SOM)**: Dedicated visualization of Total, Serviceable, and Obtainable market estimations.
     - **SWOT & User Personas**: Relocated for logical flow between metrics and users.
     - **Granular Scores**: Visual charts for technical complexity, scalability, and defensibility.
     - **GTM Roadmap**: Sequential launch plan and platform-specific landing page hooks.
 
 ### 🔑 Configuration & Security
 - **Local Environment**: `GEMINI_API_KEY` validated.
-- **Backend Route**: `src/app/api/generate/route.ts` - Optimised with 8192 token limit and robust JSON cleaning.
-- **Database**: Prisma schema updated with complex validation fields (SWOT, Personas, Market Gap).
+- **Backend Route**: `src/app/api/generate/route.ts` - Optimised with 8192 token limit, robust JSON cleaning, and realistic data prompts.
+- **Database**: Prisma schema updated with Market Size (TAM/SAM/SOM) and complex validation fields.
 - **Authentication**: NextAuth integrated across Dashboard, Save API, and Public sharing.
 
 ### 🟢 Verified in This Session
 - **Direct Transition**: Confirmed "I need an idea" mode skips picking cards.
-- **Layout Integrity**: Verified "Strategic Blueprint" is positioned between performance charts and persona.
-- **Data Completeness**: Every analysis item (SWOT, Persona, Gap, Scores) is generated and saved.
-- **E2E Flow**: Full cycle from prompt -> analysis -> save (validated via results dashboard UI rendering).
+- **Accuracy Refinement**: AI prompts optimized for simple language, realistic data, and jargon-free insights.
+- **Market Dynamics**: Integrated TAM/SAM/SOM visualizations into the results dashboard.
+- **State Persistence**: Verified save-to-dashboard logic includes all new analysis fields.
 
 ### 🚀 To-Do (Next)
 1. **Export PDF**: Implement high-fidelity PDF generation mirroring the dashboard layout.

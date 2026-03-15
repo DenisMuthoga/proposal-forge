@@ -35,6 +35,7 @@ export async function POST(req: Request) {
         swot: blueprint.swot,
         userPersona: blueprint.userPersona,
         revenueStreams: blueprint.revenueStreams,
+        marketSize: blueprint.marketSize,
       }
     });
 

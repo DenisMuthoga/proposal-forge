@@ -60,6 +60,11 @@ export async function POST(req: Request) {
           "competitors": [ { "name": string, "weakness": "Simple explanation of why they are beatable" } ],
           "pricing": [ { "tier": string, "price": string, "target": string } ],
           "revenueStreams": [string],
+          "marketSize": {
+            "tam": { "value": string, "label": "Total Addressable Market", "desc": "Simple explanation" },
+            "sam": { "value": string, "label": "Serviceable Addressable Market", "desc": "Simple explanation" },
+            "som": { "value": string, "label": "Serviceable Obtainable Market", "desc": "Simple explanation" }
+          },
           "features": [ string ],
           "techStack": { "frontend": string, "backend": string, "database": string, "hosting": string },
           "landingPageCopy": { "hero": string, "subheadline": string, "cta": string },

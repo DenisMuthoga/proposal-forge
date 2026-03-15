@@ -49,4 +49,5 @@ model Idea {
   swot            Json?
   userPersona     Json?
   revenueStreams  Json?
+  marketSize      Json?
 }

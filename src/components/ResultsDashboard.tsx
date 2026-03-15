@@ -430,6 +430,32 @@ export function ResultsDashboard() {
           </div>
         </div>
       </motion.div>
+      
+      {/* Market Sizing: TAM/SAM/SOM */}
+      <motion.div variants={itemVariants} className="space-y-6">
+        <h3 className="text-xl font-heading font-bold flex items-center gap-2 px-1">
+          <Globe className="w-5 h-5 text-secondary-400" /> Market Sizing (TAM/SAM/SOM)
+        </h3>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            { key: 'tam', icon: <Globe className="w-5 h-5" />, color: 'from-blue-500/20 to-blue-600/5', ring: 'border-blue-500/30', text: 'text-blue-400' },
+            { key: 'sam', icon: <Target className="w-5 h-5" />, color: 'from-primary-500/20 to-primary-600/5', ring: 'border-primary-500/30', text: 'text-primary-400' },
+            { key: 'som', icon: <TrendingUp className="w-5 h-5" />, color: 'from-emerald-500/20 to-emerald-600/5', ring: 'border-emerald-500/30', text: 'text-emerald-400' }
+          ].map((m) => {
+            const data = blueprint.marketSize?.[m.key as keyof typeof blueprint.marketSize] || { value: 'N/A', label: m.key.toUpperCase(), desc: 'Data pending generation' };
+            return (
+              <div key={m.key} className={cn("glass-card p-6 rounded-3xl border bg-gradient-to-br transition-all hover:scale-[1.02]", m.color, m.ring)}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className={cn("p-2 rounded-xl bg-black/40", m.text)}>{m.icon}</div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-accent-500">{data.label}</span>
+                </div>
+                <div className={cn("text-3xl font-heading font-black mb-2", m.text)}>{data.value}</div>
+                <p className="text-xs text-accent-400 leading-relaxed font-medium">{data.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </motion.div>
 
       {/* User Persona & Market Gap */}
       <motion.div variants={itemVariants} className="grid md:grid-cols-3 gap-6">
