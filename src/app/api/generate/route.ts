@@ -22,17 +22,22 @@ export async function POST(req: Request) {
     if (flow === 'brainstorm') {
         prompt = `You are an expert SaaS builder and market analyst. The user gives you a niche/prompt. 
         Generate EXACTLY 1 high-potential, unique SaaS idea for that niche. 
+        Ensure the idea is highly realistic, grounded in current market needs, and written in simple, clear language.
         Return ONLY a pure JSON object containing: "title" (string) and "desc" (1-2 sentence string). 
         Do not include markdown formatting or backticks.
         
         User Niche: ${idea}`;
     } else {
-        prompt = `You are a SaaS market expert. Goal: Perform an exhaustive deep-dive validation for this idea and return a comprehensive, data-rich JSON launch blueprint.
+        prompt = `You are a SaaS market expert. Goal: Perform an extremely accurate, exhaustive deep-dive validation for this idea.
+        The analysis must be based on realistic, grounded data and presented in simple, easy-to-understand language for a first-time founder. 
+        Avoid corporate jargon. Be direct and actionable.
+        
         Idea: ${idea}
+        
         Return ONLY valid JSON with this exact structure:
         {
-          "marketDemandScore": number (0-10),
-          "successProbability": number (0-100),
+          "marketDemandScore": number (0-10, be realistic),
+          "successProbability": number (0-100, be extremely accurate based on competition/complexity),
           "verdict": "Go" | "No Go",
           "granularScores": {
             "technicalComplexity": number (0-10),
@@ -40,7 +45,7 @@ export async function POST(req: Request) {
             "scalability": number (0-10),
             "defensibility": number (0-10)
           },
-          "marketGap": "A detailed explanation of the underserved market need this fills.",
+          "marketGap": "A simple, clear explanation of the underserved market need this fills.",
           "swot": {
             "strengths": [string],
             "weaknesses": [string],
@@ -50,16 +55,16 @@ export async function POST(req: Request) {
           "userPersona": {
             "name": string,
             "painPoints": [string],
-            "motivation": string
+            "motivation": "A simple statement on what drives this user."
           },
-          "competitors": [ { "name": string, "weakness": string } ],
+          "competitors": [ { "name": string, "weakness": "Simple explanation of why they are beatable" } ],
           "pricing": [ { "tier": string, "price": string, "target": string } ],
           "revenueStreams": [string],
           "features": [ string ],
           "techStack": { "frontend": string, "backend": string, "database": string, "hosting": string },
           "landingPageCopy": { "hero": string, "subheadline": string, "cta": string },
-          "launchPlan": [ string ],
-          "analysis": "A compelling, data-backed justification of exactly WHY this idea is high-potential (or high-risk), focusing on the specific market gap and timing."
+          "launchPlan": [ "Simple, actionable step" ],
+          "analysis": "A compelling, data-backed justification of WHY this works, written in exceptionally clear and simple language, highlighting the specific market gap and current timing."
         }`;
     }
 
