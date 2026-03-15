@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  const GEMINI_API_KEY = (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'undefined') ? process.env.GEMINI_API_KEY : 'AIzaSyATc9wwHjrAOqYDYJHuN169LITBilgtINE';
+  // VERSION_IDENTIFIER: 4.0_FINAL_FIX
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'undefined' ? process.env.GEMINI_API_KEY : 'AIzaSyATc9wwHjrAOqYDYJHuN169LITBilgtINE';
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'undefined') {
-    return NextResponse.json({ error: 'AI_KEY_MISSING_V2' }, { status: 500 });
-  }
 
   try {
     const { idea, flow } = await req.json();
