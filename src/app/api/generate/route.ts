@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  // FORCE STABLE KEY - VERSION 4.0.2
-  const GEMINI_API_KEY = 'AIzaSyATc9wwHjrAOqYDYJHuN169LITBilgtINE';
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+  if (!GEMINI_API_KEY) {
+    return NextResponse.json({ error: 'GEMINI_API_KEY_NOT_FOUND_IN_VERCEL_SETTINGS' }, { status: 500 });
+  }
 
   try {
     const { idea, flow } = await req.json();
@@ -93,52 +96,28 @@ export async function POST(req: Request) {
     let text = result.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!text) {
-        console.error('Unexpected Gemini Response Structure:', JSON.stringify(result, null, 2));
         throw new Error('No content received from Gemini');
     }
 
-    // More robust JSON extraction
     let cleanJSON = text.trim();
-    
-    // Attempt to find the first '{' or '[' and the last '}' or ']'
     const firstBrace = cleanJSON.indexOf('{');
-    const firstBracket = cleanJSON.indexOf('[');
     const lastBrace = cleanJSON.lastIndexOf('}');
-    const lastBracket = cleanJSON.lastIndexOf(']');
 
-    let startIndex = -1;
-    let endIndex = -1;
-
-    if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
-        startIndex = firstBrace;
-        endIndex = lastBrace;
-    } else if (firstBracket !== -1) {
-        startIndex = firstBracket;
-        endIndex = lastBracket;
-    }
-
-    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-        cleanJSON = cleanJSON.substring(startIndex, endIndex + 1);
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleanJSON = cleanJSON.substring(firstBrace, lastBrace + 1);
     }
     
-    try {
-        console.log('Final cleanJSON length:', cleanJSON.length);
-        const parsed = JSON.parse(cleanJSON);
+    const parsed = JSON.parse(cleanJSON);
 
-        if (flow === 'brainstorm') {
-            const ideaArray = Array.isArray(parsed) ? parsed : (parsed.ideas ? (Array.isArray(parsed.ideas) ? parsed.ideas : [parsed.ideas]) : [parsed]);
-            return NextResponse.json({ ideas: ideaArray }, { headers: { 'X-App-Version': '4.0.2' } });
-        }
-        
-        return NextResponse.json({ blueprint: parsed }, { headers: { 'X-App-Version': '4.0.2' } });
-    } catch (parseError) {
-        console.error('Failed to parse Gemini JSON. Raw text preview:', text.substring(0, 200));
-        console.error('Cleaned JSON preview:', cleanJSON.substring(0, 200));
-        throw new Error('Malformed analysis data. Please try again.');
+    if (flow === 'brainstorm') {
+        const ideaArray = Array.isArray(parsed) ? parsed : (parsed.ideas ? (Array.isArray(parsed.ideas) ? parsed.ideas : [parsed.ideas]) : [parsed]);
+        return NextResponse.json({ ideas: ideaArray });
     }
+    
+    return NextResponse.json({ blueprint: parsed });
 
   } catch (error: any) {
     console.error('Generation Failed:', error);
-    return NextResponse.json({ error: error.message || 'Failed to generate analysis' }, { status: 500, headers: { 'X-App-Version': '4.0.2' } });
+    return NextResponse.json({ error: error.message || 'Failed to generate analysis' }, { status: 500 });
   }
 }
