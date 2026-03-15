@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  // VERSION_IDENTIFIER: 4.0_FINAL_FIX
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'undefined' ? process.env.GEMINI_API_KEY : 'AIzaSyATc9wwHjrAOqYDYJHuN169LITBilgtINE';
+  // FORCE STABLE KEY - VERSION 4.0.2
+  const GEMINI_API_KEY = 'AIzaSyATc9wwHjrAOqYDYJHuN169LITBilgtINE';
   const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   try {
@@ -127,19 +127,18 @@ export async function POST(req: Request) {
 
         if (flow === 'brainstorm') {
             const ideaArray = Array.isArray(parsed) ? parsed : (parsed.ideas ? (Array.isArray(parsed.ideas) ? parsed.ideas : [parsed.ideas]) : [parsed]);
-            return NextResponse.json({ ideas: ideaArray });
+            return NextResponse.json({ ideas: ideaArray }, { headers: { 'X-App-Version': '4.0.2' } });
         }
         
-        return NextResponse.json({ blueprint: parsed });
+        return NextResponse.json({ blueprint: parsed }, { headers: { 'X-App-Version': '4.0.2' } });
     } catch (parseError) {
         console.error('Failed to parse Gemini JSON. Raw text preview:', text.substring(0, 200));
         console.error('Cleaned JSON preview:', cleanJSON.substring(0, 200));
         throw new Error('Malformed analysis data. Please try again.');
     }
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Generation Failed:', error);
-    return NextResponse.json({ error: 'Failed to generate analysis' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Failed to generate analysis' }, { status: 500, headers: { 'X-App-Version': '4.0.2' } });
   }
 }
-
