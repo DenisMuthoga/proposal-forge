@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
-  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-  // Using gemini-2.5-flash which is guaranteed available
-  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY || 'AIzaSyATc9wwHjrAOqYDYJHuN169LITBilgtINE';
+  const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   if (!GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is missing from environment variables');
+    console.error('GEMINI_API_KEY is missing');
     return NextResponse.json({ error: 'AI configuration error' }, { status: 500 });
   }
 
